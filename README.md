@@ -3,15 +3,19 @@
 ## Overview
 This repository contains SQL queries designed to solve common PayPal data analysis problems. These queries help in understanding user transactions, detecting high-value customers, analyzing money transfers, and identifying key trends in financial data.
 
-## Dataset Assumptions
-The following tables are assumed to exist:
-- **transactions** (transaction_id, user_id, transaction_type, amount, transaction_date)
-- **payments** (payment_id, payer_id, recipient_id, amount, payment_date)
-- **users** (user_id, is_fraudulent)
 
 ## SQL Solutions
 
 ### 1. Final Account Balance for Each Account
+Write a SQL query to retrieve the final account balance for each account by calculating the net amount from deposits and withdrawals.
+
+Input Table:
+• transactions table:
+ - transaction_id (integer)
+ - account_id (integer)
+ - amount (decimal)
+ - transaction_type (varchar)
+
 ```sql
 SELECT
     account_id,
@@ -29,24 +33,35 @@ GROUP BY 1;
 
 ---
 ### 2. Average Transaction Amount per User and Ranking
+Write a SQL query to compute the average transaction amount for each user and rank the users in descending order based on their average transaction amount.
+
+Input Table:
+• transactions table:
+ - transaction_id (integer)
+ - user_id (integer)
+ - transaction_date (date)
+ - amount (decimal)
+ 
 ```sql
-WITH AvgTransaction AS (
-    SELECT
-        user_id,
-        AVG(amount) AS average_amount
-    FROM transactions
-    GROUP BY user_id
-)
-SELECT
-    user_id,
-    average_amount,
-    RANK() OVER (ORDER BY average_amount DESC) AS rank
-FROM AvgTransaction;
+SELECT 
+	user_id,
+	AVG(amount) as average_amount,
+	RANK() OVER(ORDER BY AVG(amount) DESC) AS ranks
+FROM transactions
+GROUP BY user_id
 ```
 **Objective:** Compute the average transaction amount for each user and rank them in descending order.
 
 ---
 ### 3. Unique Two-Way Money Transfer Relationships
+Write a SQL query to determine the number of unique two-way money transfer relationships, where a two-way relationship is established if a user has sent money to another user and also received money from the same user.
+
+Input Table:
+• payments table:
+ - payer_id (integer)
+ - recipient_id (integer)
+ - amount (integer)
+
 ```sql
 SELECT COUNT(*) AS two_way_transfer
 FROM (
@@ -61,6 +76,21 @@ FROM (
 
 ---
 ### 4. Identifying High-Value Customers (Last Month)
+Write a SQL query to identify users who, in the last month, have either sent payments over 1000 or received payments over 5000, excluding those flagged as fraudulent.
+
+Input Tables:
+• transactions table:
+ - transaction_id (integer)
+ - user_id (integer)
+ - transaction_date (date)
+ - transaction_type (varchar)
+ - amount (decimal)
+ 
+• users table:
+ - user_id (integer)
+ - username (text)
+ - is_fraudulent (boolean)
+
 ```sql
 SELECT DISTINCT user_id
 FROM transactions
@@ -79,6 +109,19 @@ WHERE
 
 ---
 ### 5. Total and Average Transaction Amount for Each User (with At Least Two Transactions)
+Write a SQL query that calculates the total and average transaction amount for each user, including only those users who have made at least two transactions.
+
+Input Tables:
+• Users table:
+ - user_id (integer)
+ - signup_date (date)
+
+• Transactions table:
+ - transaction_id (integer)
+ - user_id (integer)
+ - transaction_date (date)
+ - transaction_amount (decimal)
+
 ```sql
 SELECT
     user_id,
